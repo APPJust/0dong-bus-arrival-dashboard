@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17372f">
+  <meta name="description" content="臺北市公車 0東 去程與返程即時到站資訊，快速找出目前等候最久的站牌。">
+  <title>0東候車雷達｜臺北公車即時到站</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="masthead">
+      <a class="brand" href="./" aria-label="0東候車雷達首頁">
+        <span class="brand-mark" aria-hidden="true"><span>0</span><i></i><span>東</span></span>
+        <span class="brand-copy"><strong>候車雷達</strong><small>TAIPEI BUS · ROUTE 0 EAST</small></span>
+      </a>
+      <div class="live-indicator" id="liveIndicator"><span class="live-dot" aria-hidden="true"></span><span id="connectionLabel">正在連線</span></div>
+    </header>
+
+    <main>
+      <section class="intro" aria-labelledby="pageTitle">
+        <div class="intro-copy">
+          <p class="eyebrow"><span class="eyebrow-line"></span>東區通勤，即時掌握</p>
+          <h1 id="pageTitle">今天，哪一站<br><em>要等最久？</em></h1>
+          <p class="intro-text">0東全線候車時間即時整理，先看最久的三站，再決定怎麼走。</p>
+        </div>
+        <div class="route-plaque" aria-label="0東公車路線">
+          <div class="route-plaque-top"><span class="route-symbol">0東</span><span class="route-tag">雙向路線</span></div>
+          <div class="route-path"><span>內湖</span><i aria-hidden="true"></i><span>臺北車站</span></div>
+          <p>去程與返程 · 臺北市</p>
+        </div>
+      </section>
+
+      <section class="update-strip" aria-label="資料更新狀態">
+        <div class="update-state"><span class="state-icon" aria-hidden="true">↻</span><div><strong id="updateSummary">正在載入官方即時資料</strong><small id="updateDetails">首次讀取到站時間、路線與站牌資料</small></div></div>
+        <div class="refresh-controls"><div class="countdown"><span>下次更新</span><strong id="countdown">--:--</strong></div><button class="refresh-button" id="refreshButton" type="button"><span aria-hidden="true">↻</span> 立即更新</button></div>
+      </section>
+
+      <div class="message-banner" id="errorBanner" role="status" aria-live="polite" hidden></div>
+      <div class="message-banner stale-banner" id="staleBanner" role="status" aria-live="polite" hidden>資料時間超過 30 分鐘沒有變動，資料可能延遲；仍可查看最近一次成功讀取的結果。</div>
+
+      <section class="answer-section" aria-labelledby="answerTitle">
+        <div class="section-heading"><div><p class="eyebrow">全線即時摘要</p><h2 id="answerTitle">最久候車，一眼找到</h2></div><span class="section-note" id="coverageNote">資料載入中</span></div>
+        <div class="summary-grid">
+          <article class="longest-card" id="longestCard">
+            <div class="longest-top"><span class="longest-kicker"><span class="alert-star" aria-hidden="true">✳</span>目前等候最久</span><span class="direction-pill" id="longestDirection">—</span></div>
+            <div class="longest-main"><div><p class="longest-stop" id="longestStop">正在讀取站牌…</p><p class="stop-subline" id="longestSubline">請稍候，正在連接臺北市公共運輸處</p></div><strong class="longest-time" id="longestTime">—</strong></div>
+            <div class="longest-footer"><span>從最新有效預估到站時間計算</span><span class="sparkle" aria-hidden="true">↗</span></div>
+          </article>
+          <article class="metric-card"><div class="metric-icon green-icon" aria-hidden="true">◎</div><p class="metric-label">全線有效預估平均</p><strong class="metric-value" id="averageWait">—</strong><p class="metric-foot">只統計可倒數的站牌</p></article>
+          <article class="metric-card"><div class="metric-icon amber-icon" aria-hidden="true">3</div><p class="metric-label">最長等候提醒</p><strong class="metric-value" id="alertCount">—<small> 站</small></strong><p class="metric-foot">全線等待最久的站牌</p></article>
+          <article class="metric-card"><div class="metric-icon blue-icon" aria-hidden="true">⌖</div><p class="metric-label">目前涵蓋站牌</p><strong class="metric-value" id="stopCount">—<small> 站</small></strong><p class="metric-foot" id="stopCountFoot">去程與返程合併統計</p></article>
+        </div>
+      </section>
+
+      <section class="insight-grid" aria-label="最長等候與趨勢圖表">
+        <article class="panel priority-panel">
+          <div class="panel-heading"><div><p class="eyebrow">需要留意</p><h2>最長等候 3 站</h2></div><span class="panel-badge">即時排行</span></div>
+          <p class="panel-description">等候時間較長的站牌優先顯示，方便調整步行或轉乘安排。</p>
+          <ol class="priority-list" id="priorityList"><li class="empty-row">正在整理全線站牌…</li></ol>
+          <p class="footnote" id="priorityFootnote">負值狀態（未發車、交管不停靠、末班已過、今日未營運）不列入等待時間排行。</p>
+        </article>
+        <article class="panel chart-panel">
+          <div class="panel-heading"><div><p class="eyebrow">站點比較</p><h2>哪些站還要等？</h2></div><span class="chart-units">分鐘</span></div>
+          <p class="panel-description" id="barDescription">目前等待時間較長的站牌</p>
+          <div class="bar-chart" id="barChart" role="img" aria-label="最長等待時間站牌長條圖"><div class="chart-empty">等待即時資料</div></div>
+          <div class="chart-legend"><span><i></i>預估到站時間</span><span id="barUpdated">每分鐘更新</span></div>
+        </article>
+      </section>
+
+      <section class="panel trend-panel" aria-labelledby="trendTitle">
+        <div class="panel-heading trend-heading"><div><p class="eyebrow">本頁開啟後</p><h2 id="trendTitle">最長等待時間的變化</h2></div><div class="trend-current"><span>現在</span><strong id="trendCurrent">—</strong></div></div>
+        <div class="trend-chart" id="trendChart" role="img" aria-label="本頁開啟後最長等待時間折線圖"><div class="chart-empty">第一次資料讀取成功後，開始記錄折線。</div></div>
+        <div class="trend-footer"><span id="trendPoints">成功更新後會新增一個資料點</span><span>只記錄此頁開啟期間，不補造歷史資料</span></div>
+      </section>
+
+      <section class="panel stops-panel" aria-labelledby="stopsTitle">
+        <div class="panel-heading stops-heading"><div><p class="eyebrow">完整路線</p><h2 id="stopsTitle">每一站的到站預估</h2></div><span class="results-count" id="resultsCount">—</span></div>
+        <div class="filter-row">
+          <label class="search-box"><span class="search-icon" aria-hidden="true">⌕</span><span class="sr-only">搜尋站名或站牌代碼</span><input id="searchInput" type="search" placeholder="搜尋站名或站牌代碼" autocomplete="off"></label>
+          <label class="select-wrap"><span class="sr-only">選擇方向</span><select id="directionFilter"><option value="all">全部方向</option><option value="go">去程 · 內湖往臺北車站</option><option value="back">返程 · 臺北車站往內湖</option></select></label>
+          <label class="select-wrap sort-wrap"><span class="sr-only">選擇排序方式</span><select id="sortOrder"><option value="wait-desc">等候最久優先</option><option value="wait-asc">即將到站優先</option><option value="sequence">依路線站序</option></select></label>
+        </div>
+        <div class="list-header" aria-hidden="true"><span>站序 / 站牌</span><span>方向</span><span>目前預估</span></div>
+        <div id="stopsList" class="stops-list"><div class="list-empty">資料載入後會顯示全線站牌。</div></div>
+        <button class="show-more" id="showMoreButton" type="button" hidden>顯示更多站牌</button>
+      </section>
+
+      <section class="source-line" aria-label="資料時間與資料來源">
+        <div class="source-times"><div><span class="time-label">資料時間</span><strong id="dataTimestamp">等待資料</strong></div><div><span class="time-label">本頁成功抓取</span><strong id="fetchTimestamp">—</strong></div></div>
+        <div class="source-attribution"><span class="source-mark" aria-hidden="true">TPE</span><div><strong>資料提供：臺北市公共運輸處</strong><span>臺北市公車預估到站時間 · <a href="https://data.gov.tw/dataset/129025" target="_blank" rel="noreferrer">政府資料開放平臺 ↗</a></span></div></div>
+      </section>
+    </main>
+
+    <footer class="footer"><div><span>DATA SOURCE</span><a href="https://tcgbusfs.blob.core.windows.net/blobbus/GetEstimateTime.gz" target="_blank" rel="noreferrer">到站預估</a><a href="https://tcgbusfs.blob.core.windows.net/blobbus/GetRoute.gz" target="_blank" rel="noreferrer">路線對照</a><a href="https://tcgbusfs.blob.core.windows.net/blobbus/GetStop.gz" target="_blank" rel="noreferrer">站牌對照</a><a href="https://data.gov.tw/license" target="_blank" rel="noreferrer">政府資料開放授權條款－第 1 版</a></div><strong class="signature">資通系 李振偉老師</strong></footer>
+    <div class="sr-only" id="liveAnnouncement" aria-live="polite"></div>
+  </div>
+</body>
+</html>
+
